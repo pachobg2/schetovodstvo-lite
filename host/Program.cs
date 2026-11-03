@@ -107,12 +107,10 @@ namespace SchetovodstvoLite
         static readonly string AppDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SchetovodstvoLite");
         static readonly string Docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         static readonly JavaScriptSerializer Js = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
-        string DataDir, DataFile, ConfigFile;
-        string BackupDir { get { return Path.Combine(DataDir, "backups"); } }
+        string DataDir, DataFile, ConfigFile, BackupDir;
 
         readonly WebView2 web = new WebView2 { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(243, 244, 246) };
         Config cfg = new Config();
-        DateTime lastBak = DateTime.MinValue;
         bool closing;
 
         public MainForm()
@@ -134,24 +132,50 @@ namespace SchetovodstvoLite
             AutoBackupDaily();
         }
 
-        // EVERYTHING lives in one folder next to the exe: Schetovodstvo-Lite-data\ = data.json (+.bak), backups\, config.json.
+        // Next to the exe:  data\data.json (the only file there)  and  backup\ (daily / before-update copies).
+        // Window position and the last PDF folder are kept outside, in %LocalAppData%\SchetovodstvoLite\config.json.
         // If the exe's folder is read-only the same layout is used in %AppData%\SchetovodstvoLite.
         void ResolveDataDir()
         {
-            if (TestRoot != null) DataDir = Path.Combine(TestRoot, "data");
+            string root;
+            if (TestRoot != null) root = TestRoot;
             else
             {
                 try
                 {
-                    var pd = Path.Combine(ExeDir, "Schetovodstvo-Lite-data");
-                    Directory.CreateDirectory(pd);
-                    var probe = Path.Combine(pd, ".write-test"); File.WriteAllText(probe, "x"); File.Delete(probe);
-                    DataDir = pd;
+                    Directory.CreateDirectory(Path.Combine(ExeDir, "data"));
+                    var probe = Path.Combine(ExeDir, "data", ".write-test"); File.WriteAllText(probe, "x"); File.Delete(probe);
+                    root = ExeDir;
                 }
-                catch { DataDir = AppDataDir; }
+                catch { root = AppDataDir; }
             }
-            Directory.CreateDirectory(DataDir); Directory.CreateDirectory(Path.Combine(DataDir, "backups"));
-            DataFile = Path.Combine(DataDir, "data.json"); ConfigFile = Path.Combine(DataDir, "config.json");
+            DataDir = Path.Combine(root, "data"); BackupDir = Path.Combine(root, "backup");
+            Directory.CreateDirectory(DataDir); Directory.CreateDirectory(BackupDir);
+            DataFile = Path.Combine(DataDir, "data.json");
+            var cfgDir = TestRoot != null ? TestRoot : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SchetovodstvoLite");
+            Directory.CreateDirectory(cfgDir);
+            ConfigFile = Path.Combine(cfgDir, "config.json");
+            MigrateOldLayout(root);
+        }
+
+        // older versions: Schetovodstvo-Lite-data\ = data.json, data.json.bak, backups\, config.json  ->  data and backup
+        void MigrateOldLayout(string root)
+        {
+            try
+            {
+                var old = Path.Combine(root, "Schetovodstvo-Lite-data");
+                if (!Directory.Exists(old)) return;
+                var od = Path.Combine(old, "data.json");
+                if (File.Exists(od) && !File.Exists(DataFile)) File.Copy(od, DataFile);
+                var ob = Path.Combine(old, "backups");
+                if (Directory.Exists(ob))
+                    foreach (var f in Directory.GetFiles(ob, "*.json"))
+                    { var t = Path.Combine(BackupDir, Path.GetFileName(f)); if (!File.Exists(t)) File.Copy(f, t); }
+                var oc = Path.Combine(old, "config.json");
+                if (File.Exists(oc) && !File.Exists(ConfigFile)) File.Copy(oc, ConfigFile);
+                if (File.Exists(DataFile)) Directory.Delete(old, true);   // only after the data is safely copied
+            }
+            catch { }
         }
 
         protected override async void OnLoad(EventArgs e)
@@ -218,7 +242,6 @@ namespace SchetovodstvoLite
             Directory.CreateDirectory(DataDir);
             var tmp = DataFile + ".tmp";
             File.WriteAllText(tmp, json, new UTF8Encoding(false));
-            if (File.Exists(DataFile) && (DateTime.Now - lastBak).TotalMinutes > 2) { File.Copy(DataFile, DataFile + ".bak", true); lastBak = DateTime.Now; }
             if (File.Exists(DataFile)) File.Delete(DataFile);
             File.Move(tmp, DataFile);
         }
