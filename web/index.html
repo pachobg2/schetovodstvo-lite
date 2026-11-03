@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<title>Счетоводство Lite</title>
+<link rel="icon" type="image/png" href="icon.png">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--ink:#1d2330;--mut:#6b7385;--line:#dde1e8;--acc:#1f6feb;--grn:#e6f4ea;--red:#fce8e6;--ylw:#fff4cc;--inp:#fff;--btn:#e9ecf2;--hd:#1d2330;color-scheme:light}
+:root[data-theme=dark]{--bg:#12151c;--card:#1b2029;--ink:#e6e9f0;--mut:#9aa3b5;--line:#2c3340;--acc:#4c8dff;--grn:#173a28;--red:#4a2321;--ylw:#4a3f12;--inp:#232a36;--btn:#2a3140;--hd:#0b0d12;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.4 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{display:flex;align-items:center;gap:6px;background:var(--hd);color:#fff;padding:0 16px;height:48px;position:sticky;top:0;z-index:5}
+header h1{font-size:16px;margin:0 20px 0 0;font-weight:600}
+header button{background:none;border:0;color:#cfd5e3;padding:14px 14px;cursor:pointer;font:inherit;border-bottom:3px solid transparent}
+header button.on{color:#fff;border-color:var(--acc)}
+header .sp{flex:1}
+main{max-width:1100px;margin:16px auto;padding:0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
+.card h2{margin:0 0 12px;font-size:15px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
+input,select,textarea{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:5px;font:inherit;background:var(--inp);color:var(--ink)}
+textarea{resize:vertical}
+button.b{background:var(--acc);color:#fff;border:0;border-radius:5px;padding:7px 14px;cursor:pointer;font:inherit}
+button.b.g{background:var(--btn);color:var(--ink)}
+button.b.r{background:#d93025}
+table{border-collapse:collapse;width:100%}
+th,td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:12px;color:var(--mut);font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.res td:first-child{width:50%}
+.res tr.gr td{background:var(--grn)}.res tr.rd td{background:var(--red)}.res tr.tot td{font-weight:700;font-size:15px;background:var(--ylw)}
+.big{font-size:22px;font-weight:700}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.mut{color:var(--mut);font-size:12px}
+.hide{display:none}
+.inv{margin-bottom:26px;background:#fff;color:#1d2330;max-width:800px;margin:0 auto;padding:40px 46px;border:1px solid var(--line);font-family:"Segoe UI",Arial,sans-serif;font-size:13px;line-height:1.45}
+.inv .top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding-bottom:18px;border-bottom:3px solid #1f6feb;margin-bottom:22px}
+.inv h1{margin:0;font-size:30px;letter-spacing:3px;color:#1f2a44;font-weight:700}
+.inv .no{margin-top:4px;font-size:14px;color:#5a6479}
+.inv .no b{color:#1d2330}
+.inv .meta{text-align:right;color:#5a6479}
+.inv .meta b{color:#1d2330}
+.inv .due{margin-top:8px;display:inline-block;background:#1f2a44;color:#fff;padding:8px 16px;border-radius:6px;text-align:right}
+.inv .due span{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:.75}
+.inv .due b{font-size:20px;color:#fff}
+.inv .parties{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
+.inv .party{background:#f4f6fa;border-radius:8px;padding:14px 16px;white-space:pre-line}
+.inv .party h3{margin:0 0 6px;font-size:11px;letter-spacing:1.5px;color:#1f6feb;text-transform:uppercase}
+.inv .party .nm{font-weight:700;font-size:14px}
+.inv table{border-collapse:collapse;width:100%}
+.inv table th{background:#1f2a44;color:#fff;border:0;padding:9px 10px;font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:600}
+.inv table th:first-child{border-radius:6px 0 0 6px}.inv table th:last-child{border-radius:0 6px 6px 0}
+.inv table td{border:0;border-bottom:1px solid #e3e7ef;padding:9px 10px;vertical-align:top}
+.inv table tbody tr:nth-child(even) td{background:#fafbfd}
+.inv .num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.inv .bottom{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-top:20px}
+.inv .vat{flex:1;white-space:pre-line;font-size:12px;color:#5a6479;border-left:3px solid #c9d3e6;padding:2px 0 2px 12px}
+.inv .totals{min-width:250px}
+.inv .totals div{display:flex;justify-content:space-between;gap:20px;padding:4px 0}
+.inv .totals .tt{border-top:2px solid #1f2a44;margin-top:4px;padding-top:8px;font-size:17px;font-weight:700;color:#1f2a44}
+.inv .totals .eur{color:#5a6479}
+.updbar{display:flex;gap:10px;align-items:center;background:var(--ylw);padding:8px 16px;border-bottom:1px solid var(--line)}.updbar span{flex:1}
+@page{size:A4;margin:0}
+.invlbl{max-width:800px;margin:0 auto 6px;font-size:12px;color:var(--mut);letter-spacing:1px;text-transform:uppercase}
+@media print{
+ header,.noprint,.invlbl,.updbar{display:none!important}
+ body{background:#fff}main{max-width:none;margin:0;padding:0}
+ .tab{display:none!important}#tab-invoice{display:block!important}
+ .inv{border:0;padding:16mm 18mm;max-width:none;margin:0;min-height:0;break-inside:avoid}
+ body.p-bg #invEn,body.p-en #invBg{display:none!important}
+ body.p-both #invBg{break-after:page}
+}
+</style>
+</head>
+<body>
+<header>
+ <h1>Счетоводство Lite</h1>
+ <button data-t="calc" class="on">Данни</button>
+ <button data-t="invoice">Фактура</button>
+ <button data-t="history">История</button>
+ <button data-t="settings">Настройки</button>
+ <span class="sp"></span>
+ <button id="theme" title="Тъмен / светъл режим" style="font-size:17px;padding:10px 12px">☾</button>
+</header>
+<div id="upd_bar" class="updbar hide noprint"></div>
+<main>
+
+<section class="tab" id="tab-calc">
+ <div class="card">
+  <h2>Период и параметри</h2>
+  <div class="grid">
+   <div><label>Месец</label><input type="month" id="period"></div>
+   <div><label>Работни дни</label><input type="number" id="workdays" step="1"></div>
+   <div><label>Доп. часове (+)</label><input type="number" id="extra" step="0.5"></div>
+   <div><label>Ръчна сума (EUR) – замества часовете</label><input type="number" id="manual" step="0.01" placeholder="празно = по часове"></div>
+  </div>
+  <div class="mut" style="margin-top:8px" id="hoursInfo"></div>
+ </div>
+
+
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(380px,1fr))">
+  <div class="card"><h2>Заплата</h2>
+   <table class="res" id="res"></table>
+  </div>
+  <div class="card"><h2>Сума за фактуриране</h2>
+   <div class="big" id="invEUR"></div>
+   <table class="res" id="invBreak" style="margin-top:10px"></table>
+   <div class="row noprint" style="margin-top:12px"><button class="b" id="toInvoice">Към фактурата →</button><button class="b g" id="saveHist">Запази в история</button></div>
+  </div>
+ </div>
+</section>
+
+<section class="tab hide" id="tab-invoice">
+ <div class="card noprint">
+  <div class="row">
+   <div style="width:160px"><label>Фактура №</label><input type="number" id="invNo" step="1"></div>
+   <div style="width:170px"><label>Дата</label><input type="date" id="invDate"></div>
+   <span style="flex:1"></span>
+   <button class="b" id="pdf" title="Записва две PDF-а (БГ и EN) в папка с името на месеца">Запази PDF</button>
+   <button class="b g" id="pBg" title="Печат или запис като PDF – само българската">Печат / PDF – БГ</button>
+   <button class="b g" id="pEn" title="Печат или запис като PDF – само английската">Печат / PDF – EN</button>
+   <button class="b g" id="pBoth" title="Двете фактури, всяка на отделна страница">Печат / PDF – и двете</button>
+  </div>
+  <div class="mut" id="pdfMsg" style="margin-top:6px"></div>
+  <div class="mut" style="margin-top:6px">В прозореца за печат изберете принтер или „Запази като PDF“.</div>
+ </div>
+ <div class="invlbl">Българска фактура</div>
+ <div class="inv" id="invBg"></div>
+ <div class="invlbl">English invoice</div>
+ <div class="inv" id="invEn"></div>
+</section>
+
+<section class="tab hide" id="tab-history">
+ <div class="card"><h2>История по месеци</h2>
+  <table id="histTable"><thead><tr><th>Месец</th><th>Фактура №</th><th class="n">Фактурирано EUR</th><th class="n">Нето (EUR)</th><th></th></tr></thead><tbody></tbody></table>
+  <div class="mut" id="histEmpty">Още няма запазени месеци.</div>
+ </div>
+ <div class="card"><h2>Резервно копие</h2>
+  <div class="row"><button class="b g" id="exp">Експорт (JSON)</button><label class="b g" style="margin:0;cursor:pointer;color:var(--ink)">Импорт<input type="file" id="imp" accept=".json" class="hide"></label></div>
+  <div class="mut">Данните се пазят локално на този компютър. Правете експорт от време на време.</div>
+ </div>
+</section>
+
+<section class="tab hide" id="tab-settings">
+ <div class="card"><h2>Параметри на изчислението</h2>
+  <div class="grid">
+   <div><label>Часова ставка (EUR)</label><input type="number" id="hourly" step="0.01"></div>
+   <div><label>Макс. осигурителен праг (EUR)</label><input type="number" id="cap" step="0.01"></div>
+   <div><label>Осигуровки %</label><input type="number" id="ins" step="0.01"></div>
+   <div><label>Нормативно признати разходи %</label><input type="number" id="norm" step="0.1"></div>
+   <div><label>Данък %</label><input type="number" id="taxp" step="0.1"></div>
+  </div>
+ </div>
+ <div class="card"><h2>Обновления</h2>
+  <div class="row"><span id="verInfo" class="mut"></span><button class="b g" id="up_check">Провери за обновления</button><label style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" id="up_auto" style="width:auto"> Проверявай автоматично</label></div>
+  <div id="up_msg" class="mut" style="margin-top:8px"></div>
+  <div class="mut" style="margin-top:6px">Данните ви не се променят при обновяване. Новите версии се теглят от GitHub (pachobg2/schetovodstvo-lite) и се проверяват със SHA-256.</div>
+ </div>
+ <div class="card"><h2>Данни за фактурата</h2>
+  <div class="grid" style="grid-template-columns:1fr 1fr">
+   <div><label>Доставчик</label><textarea id="supplier" rows="9"></textarea></div>
+   <div><label>Получател</label><textarea id="recipient" rows="9"></textarea></div>
+   <div><label>Supplier (English invoice, with bank)</label><textarea id="supplierEn" rows="9"></textarea></div>
+   <div><label>ДДС – основание (BG фактура)</label><textarea id="vatBg" rows="3"></textarea><label style="margin-top:8px">VAT reason (English invoice)</label><textarea id="vatEn" rows="4"></textarea></div>
+   <div><label>Банкови данни</label><textarea id="bank" rows="4"></textarea></div>
+   <div><label>Текст на консултантската услуга – BG (напр. „Консултански услуги за периода“)</label><input id="svcBg"><label style="margin-top:8px">Consultancy text – EN</label><input id="svcEn"></div>
+  </div>
+ </div>
+</section>
+</main>
+
+<script>
+const KEY='razhodi.lite.v1';
+const def={
+ period:new Date().toISOString().slice(0,7),workdays:22,extra:0,manual:'',hourly:19,rate:0.89,cap:2300,ins:27.8,norm:25,taxp:10,
+ items:[],
+ invNo:1,invDate:new Date().toISOString().slice(0,10),lang:'bg',
+ supplier:'Име и фамилия\nГрад, пощенски код\nАдрес\nБулстат: ...',
+ recipient:'Име на получател\nАдрес\n\nTax ID: ...',
+ bank:'Банка: ...\nSWIFT: ...\nIBAN: ...',
+ supplierEn:'Name\nAddress\nCity, postal code\nCountry\nTax ID: ...\n\nBank Name: ...\nSWIFT: ...\nIBAN: ...',
+ vatBg:'Ставка на ДДС: 0%\nОснование за неначисляване на ДДС: ...',
+ vatEn:'VAT Rate: 0%\nReason for non-chargeable VAT: ...',
+ svcBg:'Консултански услуги за периода',svcEn:'Consultancy services rendered',
+ history:{}
+};
+let S=structuredClone(def),ready=false;
+// the Windows host (WebView2) keeps data.json next to the exe; without it (plain browser) localStorage is used
+const host=(window.chrome&&chrome.webview)?(()=>{let n=0;const p={};chrome.webview.addEventListener('message',e=>{const m=e.data;if(m&&m.ev==='upd'){updProgress(m.pct);return}const q=m&&p[m.id];if(q){delete p[m.id];m.error?q.rej(new Error(m.error)):q.res(m.result)}});return{call:(cmd,arg)=>new Promise((res,rej)=>{const id=++n;p[id]={res,rej};chrome.webview.postMessage({id,cmd,arg})})}})():null;
+// the old version kept the hourly rate in USD and converted at S.rate; it is now a EUR rate (done once per record)
+function toEur(o){if(o&&o._eur!==1){o.hourly=Math.round(((+o.hourly||0)*(+o.rate||1)+Number.EPSILON)*100)/100;o._eur=1}}
+window.__state=()=>ready?JSON.stringify(S):null;
+const $=id=>document.getElementById(id);
+let saveT=0;
+const saveNow=()=>{if(!ready)return;try{host?host.call('save',JSON.stringify(S)).catch(()=>{}):localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const save=()=>{clearTimeout(saveT);saveT=setTimeout(saveNow,300)};
+const r2=x=>Math.round((x+Number.EPSILON)*100)/100;
+const fe=x=>'€'+r2(x).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fu=x=>'$'+r2(x).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fn=x=>r2(x).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- calculation (EUR only) ---------- */
+function calc(s=S){
+ const man=s.manual!==''&&s.manual!=null&&!isNaN(+s.manual);
+ const hours=(+s.workdays)*8+(+s.extra||0);
+ const hourly=+s.hourly, consEUR=man?r2(+s.manual):r2(hours*hourly), G=man?+s.manual:hours*hourly;
+ const L2=s.ins/100,tp=s.taxp/100,np=s.norm/100,K=+s.cap;
+ const taxes=g=>{const n=g*np,i=(g-n)<K?(g-n)*L2:K*L2,bs=g-n-i,t=bs*tp;return{gross:g,norm:n,ins:i,base:bs,tax:t,state:i+t,net:g-i-t}};
+ return {man,hours,hourly,consEUR,B:taxes(G),K,invEUR:consEUR};
+}
+
+/* ---------- UI: calc ---------- */
+const fields=['period','workdays','extra','manual','hourly','cap','ins','norm','taxp'];
+function loadFields(){fields.forEach(f=>$(f).value=S[f]);['supplier','recipient','bank','supplierEn','vatBg','vatEn','svcBg','svcEn'].forEach(f=>$(f).value=S[f]);$('invNo').value=S.invNo;$('invDate').value=S.invDate}
+fields.forEach(f=>$(f).addEventListener('input',()=>{S[f]=f==='period'?$(f).value:f==='manual'?$(f).value:parseFloat($(f).value)||0;save();render()}));
+['supplier','recipient','bank','supplierEn','vatBg','vatEn','svcBg','svcEn'].forEach(f=>$(f).addEventListener('input',()=>{S[f]=$(f).value;save();render()}));
+$('invNo').oninput=()=>{S.invNo=+$('invNo').value;save();render()};
+$('invDate').oninput=()=>{S.invDate=$('invDate').value;save();render()};
+
+
+function renderNumbers(){
+ const c=calc(),B=c.B;
+ $('hoursInfo').textContent=c.man?`Ръчна сума: ${fe(c.consEUR)} (часовете не се използват)`:`Часове: ${S.workdays} × 8 + ${S.extra} = ${c.hours} ч · ставка ${fe(S.hourly)} · осигурителен праг ${fe(c.K)}`;
+ const row=(l,k)=>`<tr><td>${l}</td><td class="n">${fe(B[k])}</td></tr>`;
+ $('res').innerHTML='<tr><th></th><th class="n">EUR</th></tr>'+[
+  row('Брутен доход','gross'),
+  row('Нормативно признати разходи '+S.norm+'%','norm'),
+  row('Осигуровки + вноски за месеца','ins'),
+  row('Данъчна основа','base'),
+  row('Данък върху дохода','tax'),
+  row('Общо удръжки','state'),
+  row('Нето доход','net')
+ ].join('');
+ $('invEUR').textContent=fe(c.invEUR);
+ const R=([l,v,cls])=>`<tr class="${cls||''}"><td>${l}</td><td class="n">${v}</td></tr>`;
+ $('invBreak').innerHTML=[
+  [c.man?'Консултации (ръчна сума)':'Консултации ('+c.hours+' ч × '+fn(c.hourly)+')',fe(c.consEUR)],
+  ['Общо удръжки',fe(B.state),'rd'],
+  ['Нето',fe(B.net),'gr']
+ ].map(R).join('');
+}
+
+/* ---------- invoice ---------- */
+const T={
+ bg:{title:'ФАКТУРА',no:'№ ',date:'Дата на издаване: ',pay:'Сума за плащане: ',sup:'ДОСТАВЧИК:',rec:'ПОЛУЧАТЕЛ:',name:'Наименование на стока или услуга',qty:'количество',unit:'ед. цена',sum:'сума',h:'часа',p:'бр.',total:'Общо:'},
+ en:{title:'INVOICE',no:'No. ',date:'Issue date: ',pay:'Amount due: ',sup:'FROM',rec:'TO',name:'Description of goods or services',qty:'quantity',unit:'unit price',sum:'amount',h:'hours',p:'pcs',total:'Total:'}
+};
+function periodText(lang){
+ const [y,m]=S.period.split('-').map(Number);if(!y)return'';
+ const last=new Date(y,m,0).getDate(),mm=String(m).padStart(2,'0');
+ return lang==='bg'?`${S.svcBg} 01.${mm} - ${last}.${mm}.${y}`:`${S.svcEn} 01/${mm}/${y}-${last}/${mm}/${y}`;
+}
+function invHtml(lang){
+ const t=T[lang],c=calc(),bg=lang==='bg';
+ const d=S.invDate.split('-').reverse().join('/');
+ const rows=[c.man?[periodText(lang),1,t.p,c.consEUR,c.consEUR]:[periodText(lang),c.hours,t.h,r2(c.hourly),c.consEUR]];
+ const total=r2(rows.reduce((a,x)=>a+x[4],0));
+ const no=String(S.invNo).padStart(10,'0'),th='<th class="num">';
+ const party=(h,x)=>{const l=x.split('\n');return `<div class="party"><h3>${h}</h3><div class="nm">${esc(l[0])}</div>${esc(l.slice(1).join('\n'))}</div>`};
+ return `<div class="top">
+  <div><h1>${t.title}</h1><div class="no">${t.no}<b>${no}</b></div></div>
+  <div class="meta">${t.date}<b>${d}</b>
+   <div><div class="due"><span>${t.pay.replace(/:\s*$/,'')}</span><b>${fn(total)} EUR</b></div></div></div>
+ </div>
+ <div class="parties">${party(t.sup,bg?S.supplier+'\n\n'+S.bank:S.supplierEn)}${party(t.rec,S.recipient)}</div>
+ <table><thead><tr><th style="text-align:left">${t.name}</th>${th}${t.qty}</th><th style="width:44px"></th>${th}${t.unit}</th>${th}${t.sum}</th></tr></thead><tbody>
+ ${rows.map(x=>`<tr><td>${esc(x[0])}</td><td class="num">${x[1]}</td><td>${x[2]}</td><td class="num">${fn(x[3])}</td><td class="num">${fn(x[4])}</td></tr>`).join('')}
+ </tbody></table>
+ <div class="bottom"><div class="vat">${esc(bg?S.vatBg:S.vatEn)}</div>
+  <div class="totals"><div class="tt"><span>${t.total}</span><span>${fn(total)} EUR</span></div></div></div>`;
+}
+function renderInvoice(){$('invBg').innerHTML=invHtml('bg');$('invEn').innerHTML=invHtml('en')}
+function doPrint(mode){document.body.classList.add('p-'+mode);try{window.print()}finally{document.body.classList.remove('p-'+mode)}}
+$('pBg').onclick=()=>doPrint('bg');$('pEn').onclick=()=>doPrint('en');$('pBoth').onclick=()=>doPrint('both');
+$('toInvoice').onclick=()=>show('invoice');
+
+/* ---------- history ---------- */
+$('saveHist').onclick=()=>{
+ const c=calc();S.history[S.period]={state:JSON.parse(JSON.stringify({...S,history:undefined})),invEUR:c.invEUR,total:r2(c.B.net)};
+ S.invNo=S.invNo; save();render();show('history');
+};
+function renderHistory(){
+ const ks=Object.keys(S.history).sort().reverse(),tb=document.querySelector('#histTable tbody');
+ $('histEmpty').classList.toggle('hide',ks.length>0);
+ tb.innerHTML=ks.map(k=>{const h=S.history[k];return `<tr><td>${k}</td><td>${h.state.invNo}</td><td class="n">${fe(h.invEUR)}</td><td class="n">${fe(h.total)}</td><td class="n"><button class="b g" data-load="${k}">Отвори</button> <button class="b g" data-nextm="${k}" title="Нов месец от този">Нов месец</button> <button class="b g" data-hdel="${k}">✕</button></td></tr>`}).join('');
+}
+$('histTable').addEventListener('click',e=>{
+ const k=e.target.dataset.load||e.target.dataset.nextm,del=e.target.dataset.hdel;
+ if(del){if(confirm('Да изтрия ли '+del+'?')){delete S.history[del];save();render()}return}
+ if(!k)return;const h=S.history[k].state,hist=S.history;
+ if(e.target.dataset.nextm){const[y,m]=k.split('-').map(Number);const n=new Date(y,m,1);h.period=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');h.invNo=Math.max(S.invNo,h.invNo)+1;h.invDate=new Date().toISOString().slice(0,10)}
+ S=Object.assign({},def,h,{history:hist});save();loadFields();render();show('calc');
+});
+$('exp').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='razhodi-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click()};
+$('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{S=Object.assign({},def,JSON.parse(t));save();loadFields();render();alert('Импортирано.')}catch(x){alert('Невалиден файл')}})};
+
+/* ---------- tabs ---------- */
+function show(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hide',x.id!=='tab-'+t));document.querySelectorAll('header button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));if(t==='invoice')renderInvoice();if(t==='history')renderHistory()}
+document.querySelectorAll('header button').forEach(b=>b.onclick=()=>show(b.dataset.t));
+function render(){renderNumbers();renderInvoice();renderHistory()}
+const applyTheme=t=>{document.documentElement.dataset.theme=t;$('theme').textContent=t==='dark'?'☀':'☾'};
+let theme=null;try{theme=localStorage.getItem('razhodi.lite.theme')}catch(e){}
+applyTheme(theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+$('theme').onclick=()=>{const t=document.documentElement.dataset.theme==='dark'?'light':'dark';applyTheme(t);try{localStorage.setItem('razhodi.lite.theme',t)}catch(e){}};
+/* ---------- PDF (host) ---------- */
+const MONTHS_BG=['Януари','Февруари','Март','Април','Май','Юни','Юли','Август','Септември','Октомври','Ноември','Декември'];
+const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const APP_TITLE='Счетоводство Lite';
+function docTitle(lang){const [y,m]=S.invDate.split('-').map(Number),no=String(S.invNo).padStart(10,'0');return lang==='bg'?`Фактура № ${no} – ${MONTHS_BG[m-1]} ${y}`:`Invoice No. ${no} – ${MONTHS_EN[m-1]} ${y}`}
+addEventListener('beforeprint',()=>{if(document.title===APP_TITLE){const l=document.body.classList.contains('p-en')?'en':'bg';document.title=docTitle(l)}});
+addEventListener('afterprint',()=>{document.title=APP_TITLE});
+$('pdf').onclick=async()=>{
+ const msg=t=>$('pdfMsg').innerHTML=t;
+ if(!host){msg('PDF се записва само в приложението за Windows – използвайте Печат.');return}
+ const [y,m]=S.invDate.split('-').map(Number),no=String(S.invNo).padStart(10,'0'),ym=`${y}-${String(m).padStart(2,'0')}`;
+ try{
+  const r=await host.call('pdfs',{folder:`${MONTHS_BG[m-1]} ${y}`,files:[{name:`Faktura_${no}_${ym}.pdf`,lang:'bg',title:docTitle('bg')},{name:`Invoice_${no}_${ym}.pdf`,lang:'en',title:docTitle('en')}]});
+  document.title=APP_TITLE;
+  msg(r&&r.length?`Записани ${r.length} файла в: <b>${esc(r[0].replace(/[\\/][^\\/]*$/,''))}</b>`:'');
+ }catch(e){document.title=APP_TITLE;msg('<span style="color:#d93025">'+esc(e.message)+'</span>')}
+};
+
+/* ---------- online updates (GitHub releases) ---------- */
+const UPD_KEY='schetovodstvo.lite.update';
+function updPref(){try{return JSON.parse(localStorage.getItem(UPD_KEY)||'{}')}catch(e){return{}}}
+function updSet(o){try{localStorage.setItem(UPD_KEY,JSON.stringify(Object.assign(updPref(),o)))}catch(e){}}
+let updInfo=null,updBusy=false;
+function updShow(html){const b=$('upd_bar');b.innerHTML=html||'';b.classList.toggle('hide',!html)}
+function updProgress(p){const e=$('upd_pct');if(e)e.textContent=p+'%'}
+function updBarNew(i){updShow(`<span>Има нова версия <b>${esc(i.latest)}</b> (вие имате ${esc(i.current)}).</span><button class="b" id="upd_go">Обнови сега</button><button class="b g" id="upd_x" title="По-късно">✕</button>`);$('upd_go').onclick=updInstall;$('upd_x').onclick=()=>updShow('')}
+async function updCheck(manual){
+ if(!host||updBusy)return;
+ const msg=t=>{if(manual)$('up_msg').innerHTML=t};
+ msg('Проверявам…');
+ try{
+  const i=await host.call('updateCheck');updSet({last:Date.now()});
+  if(i.newer&&i.ready){updInfo=i;updBarNew(i);msg(`Има нова версия <b>${esc(i.latest)}</b> – бутонът „Обнови сега“ е най-горе.`)}
+  else if(i.newer)msg('Има по-нова версия, но още не е напълно публикувана. Опитайте по-късно.');
+  else msg(`Имате най-новата версия (${esc(i.current)}).`);
+ }catch(e){msg('Не успях да проверя за обновления (няма интернет или GitHub не отговаря).')}
+}
+async function updInstall(){
+ if(updBusy||!updInfo)return;
+ if(!confirm(`Нова версия ${updInfo.latest} (вие имате ${updInfo.current}), ${updInfo.sizeMb} MB.\n\n${updInfo.notes||''}\n\nДанните ви не се променят. Програмата ще се затвори и ще се отвори отново. Да обновя ли?`))return;
+ updBusy=true;saveNow();try{await host.call('backup',JSON.stringify(S))}catch(e){}
+ updShow(`<span>Изтегляне на версия ${esc(updInfo.latest)}… <b id="upd_pct">0%</b> – не затваряйте програмата.</span>`);
+ try{await host.call('updateInstall');updShow('<span>Рестартиране…</span>')}
+ catch(e){updBusy=false;updShow(`<span style="color:#d93025">Обновяването не успя: ${esc(e.message)}. Старата версия остава.</span><button class="b g" id="upd_x">✕</button>`);$('upd_x').onclick=()=>updShow('')}
+}
+$('up_check').onclick=()=>updCheck(true);
+$('up_auto').checked=updPref().auto!==false;
+$('up_auto').onchange=e=>updSet({auto:e.target.checked});
+
+/* ---------- start ---------- */
+(async()=>{
+ try{
+  const raw=host?await host.call('load'):localStorage.getItem(KEY);
+  if(raw)S=Object.assign({},def,JSON.parse(raw));
+  toEur(S);Object.values(S.history||{}).forEach(h=>toEur(h.state));
+  ready=true;
+ }catch(e){alert('Данните не можаха да се прочетат: '+e.message+'\nПрограмата няма да записва, за да не презапише файла. Има резервни копия в папката с данните.')}
+ loadFields();render();
+ if(host){
+  try{const a=await host.call('about');$('verInfo').textContent='Версия '+a.version;
+   if(updPref().auto!==false)setTimeout(()=>updCheck(false),3000)}catch(e){}
+ }else $('verInfo').textContent='Версия в браузър – обновяването е достъпно само в приложението.';
+})();
+
+</script>
+</body>
+</html>

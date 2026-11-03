@@ -1,0 +1,10 @@
+/*
+!/.gitignore
+!/README.md
+!/build.ps1
+!/release.ps1
+!/host/
+!/web/
+bin/
+obj/
+*.bak
