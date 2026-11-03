@@ -95,6 +95,8 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
    <div><label>Работни дни</label><input type="number" id="workdays" step="1"></div>
    <div><label>Доп. часове (+)</label><input type="number" id="extra" step="0.5"></div>
    <div><label>Ръчна сума (EUR) – замества часовете</label><input type="number" id="manual" step="0.01" placeholder="празно = по часове"></div>
+   <div class="manp"><label>Период от (по избор)</label><input type="date" id="perFrom"></div>
+   <div class="manp"><label>Период до (по избор)</label><input type="date" id="perTo"></div>
   </div>
   <div class="mut" style="margin-top:8px" id="hoursInfo"></div>
  </div>
@@ -174,7 +176,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 <script>
 const KEY='razhodi.lite.v1';
 const def={
- period:new Date().toISOString().slice(0,7),workdays:22,extra:0,manual:'',hourly:19,rate:0.89,cap:2300,ins:27.8,norm:25,taxp:10,
+ period:new Date().toISOString().slice(0,7),workdays:22,extra:0,manual:'',perFrom:'',perTo:'',hourly:19,rate:0.89,cap:2300,ins:27.8,norm:25,taxp:10,
  items:[],
  invNo:1,invDate:new Date().toISOString().slice(0,10),lang:'bg',
  supplier:'Име и фамилия\nГрад, пощенски код\nАдрес\nБулстат: ...',
@@ -213,9 +215,9 @@ function calc(s=S){
 }
 
 /* ---------- UI: calc ---------- */
-const fields=['period','workdays','extra','manual','hourly','cap','ins','norm','taxp'];
+const fields=['period','workdays','extra','manual','perFrom','perTo','hourly','cap','ins','norm','taxp'];
 function loadFields(){fields.forEach(f=>$(f).value=S[f]);['supplier','recipient','bank','supplierEn','vatBg','vatEn','svcBg','svcEn'].forEach(f=>$(f).value=S[f]);$('invNo').value=S.invNo;$('invDate').value=S.invDate}
-fields.forEach(f=>$(f).addEventListener('input',()=>{S[f]=f==='period'?$(f).value:f==='manual'?$(f).value:parseFloat($(f).value)||0;save();render()}));
+fields.forEach(f=>$(f).addEventListener('input',()=>{S[f]=(f==='period'||f==='manual'||f==='perFrom'||f==='perTo')?$(f).value:parseFloat($(f).value)||0;save();render()}));
 ['supplier','recipient','bank','supplierEn','vatBg','vatEn','svcBg','svcEn'].forEach(f=>$(f).addEventListener('input',()=>{S[f]=$(f).value;save();render()}));
 $('invNo').oninput=()=>{S.invNo=+$('invNo').value;save();render()};
 $('invDate').oninput=()=>{S.invDate=$('invDate').value;save();render()};
@@ -223,6 +225,7 @@ $('invDate').oninput=()=>{S.invDate=$('invDate').value;save();render()};
 
 function renderNumbers(){
  const c=calc(),B=c.B;
+ document.querySelectorAll('.manp').forEach(e=>e.style.display=c.man?'':'none');
  $('hoursInfo').textContent=c.man?`Ръчна сума: ${fe(c.consEUR)} (часовете не се използват)`:`Часове: ${S.workdays} × 8 + ${S.extra} = ${c.hours} ч · ставка ${fe(S.hourly)} · осигурителен праг ${fe(c.K)}`;
  const row=(l,k)=>`<tr><td>${l}</td><td class="n">${fe(B[k])}</td></tr>`;
  $('res').innerHTML='<tr><th></th><th class="n">EUR</th></tr>'+[
@@ -249,6 +252,11 @@ const T={
  en:{title:'INVOICE',no:'No. ',date:'Issue date: ',pay:'Amount due: ',sup:'FROM',rec:'TO',name:'Description of goods or services',qty:'quantity',unit:'unit price',sum:'amount',h:'hours',p:'pcs',total:'Total:'}
 };
 function periodText(lang){
+ const c=calc();
+ if(c.man&&S.perFrom&&S.perTo){
+  const a=S.perFrom.split('-').reverse(),b=S.perTo.split('-').reverse();
+  return lang==='bg'?`${S.svcBg} ${a.join('.')} - ${b.join('.')}`:`${S.svcEn} ${a.join('/')}-${b.join('/')}`;
+ }
  const [y,m]=S.period.split('-').map(Number);if(!y)return'';
  const last=new Date(y,m,0).getDate(),mm=String(m).padStart(2,'0');
  return lang==='bg'?`${S.svcBg} 01.${mm} - ${last}.${mm}.${y}`:`${S.svcEn} 01/${mm}/${y}-${last}/${mm}/${y}`;
