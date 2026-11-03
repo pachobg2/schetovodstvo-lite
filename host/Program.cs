@@ -132,8 +132,7 @@ namespace SchetovodstvoLite
             AutoBackupDaily();
         }
 
-        // Next to the exe:  data\data.json (the only file there)  and  backup\ (daily / before-update copies).
-        // Window position and the last PDF folder are kept outside, in %LocalAppData%\SchetovodstvoLite\config.json.
+        // Next to the exe:  data\ = data.json + config.json (window position, last PDF folder)  and  backup\ (daily / before-update copies).
         // If the exe's folder is read-only the same layout is used in %AppData%\SchetovodstvoLite.
         void ResolveDataDir()
         {
@@ -152,10 +151,14 @@ namespace SchetovodstvoLite
             DataDir = Path.Combine(root, "data"); BackupDir = Path.Combine(root, "backup");
             Directory.CreateDirectory(DataDir); Directory.CreateDirectory(BackupDir);
             DataFile = Path.Combine(DataDir, "data.json");
-            var cfgDir = TestRoot != null ? TestRoot : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SchetovodstvoLite");
-            Directory.CreateDirectory(cfgDir);
-            ConfigFile = Path.Combine(cfgDir, "config.json");
+            ConfigFile = Path.Combine(DataDir, "config.json");
             MigrateOldLayout(root);
+            try   // 2.3.0 kept config.json in %LocalAppData%; bring it back next to the data
+            {
+                var mid = Path.Combine(TestRoot != null ? TestRoot : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SchetovodstvoLite"), "config.json");
+                if (File.Exists(mid)) { if (!File.Exists(ConfigFile)) File.Copy(mid, ConfigFile); File.Delete(mid); }
+            }
+            catch { }
         }
 
         // older versions: Schetovodstvo-Lite-data\ = data.json, data.json.bak, backups\, config.json  ->  data and backup

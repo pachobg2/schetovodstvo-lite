@@ -10,7 +10,7 @@
     <RootNamespace>SchetovodstvoLite</RootNamespace>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>2.3.0</Version>
+    <Version>2.3.1</Version>
     <Product>Счетоводство Lite</Product>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
